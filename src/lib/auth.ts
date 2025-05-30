@@ -20,7 +20,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    customSession(async ({ user }) => {
+    customSession(async ({ user, session }) => {
       const clinics = await db.query.usersToClinicsTable.findMany({
         where: eq(usersToClinicsTable.userId, user.id),
         with: {
@@ -28,15 +28,18 @@ export const auth = betterAuth({
         },
       });
       //TODO: Ao adaptar para o usuario ter mais de uma clinica, mudar o codigo abaixo
-      const clinic = clinics[0];
+      const clinic = clinics?.[0];
       return {
         user: {
           ...user,
-          clinic: {
-            id: clinic.clinicId,
-            name: clinic.clinic.name,
-          },
+          clinic: clinic?.clinicId
+            ? {
+                id: clinic?.clinicId,
+                name: clinic?.clinic?.name,
+              }
+            : undefined,
         },
+        session,
       };
     }),
   ],
