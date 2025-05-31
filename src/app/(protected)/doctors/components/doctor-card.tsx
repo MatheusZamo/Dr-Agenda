@@ -29,7 +29,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
     useState(false);
 
   const doctorInitials = doctor.name
-    .split("")
+    .split(" ")
     .map((name) => name[0])
     .join("");
 
@@ -44,7 +44,9 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
           </Avatar>
           <div>
             <h3 className="text-sm font-medium">{doctor.name}</h3>
-            <p className="text-muted-foreground text-sm">{doctor.specialty}</p>
+            <p className="text-muted-foreground line-clamp-1 text-sm">
+              {doctor.specialty}
+            </p>
           </div>
         </div>
       </CardHeader>

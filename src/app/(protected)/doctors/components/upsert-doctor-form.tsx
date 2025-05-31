@@ -396,6 +396,7 @@ const UpsertDoctorForm = ({ doctor, onSuccess }: UpsertDoctorFormProps) => {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+                <FormMessage />
               </FormItem>
             )}
           />
