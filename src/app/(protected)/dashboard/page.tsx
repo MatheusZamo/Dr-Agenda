@@ -1,8 +1,11 @@
 import dayjs from "dayjs";
 import { and, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { Calendar } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
 import {
   PageActions,
   PageContainer,
@@ -16,6 +19,7 @@ import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
+import { appointmentsTableColumns } from "../appointments/components/table-columns";
 import AppointmentsChart from "./components/appoitments-chart";
 import { DatePicker } from "./components/date-picker";
 import StatsCards from "./components/stats-cards";
@@ -56,6 +60,7 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
     [totalDoctors],
     topDoctorsData,
     topSpecialtiesData,
+    todayAppointments,
   ] = await Promise.all([
     db
       .select({
@@ -133,8 +138,8 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
     db.query.appointmentsTable.findMany({
       where: and(
         eq(appointmentsTable.clinicId, session.user.clinic.id),
-        gte(appointmentsTable.date, new Date()),
-        lte(appointmentsTable.date, new Date()),
+        gte(appointmentsTable.date, dayjs().startOf("day").toDate()),
+        lte(appointmentsTable.date, dayjs().endOf("day").toDate()),
       ),
       with: {
         patient: true,
@@ -167,7 +172,9 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 
   const dailyAppointmentsData = await db
     .select({
-      date: sql<string>`DATE(${appointmentsTable.date})`.as("date"),
+      date: sql<string>`DATE(${appointmentsTable.date} AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo')`.as(
+        "date",
+      ),
       appointments: count(appointmentsTable.id),
       revenue:
         sql<number>`COALESCE(SUM(${appointmentsTable.appointmentPriceInCents}), 0)`.as(
@@ -182,8 +189,12 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
         lte(appointmentsTable.date, chartEndDate),
       ),
     )
-    .groupBy(sql`DATE(${appointmentsTable.date})`)
-    .orderBy(sql`DATE(${appointmentsTable.date})`);
+    .groupBy(
+      sql`DATE(${appointmentsTable.date} AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo')`,
+    )
+    .orderBy(
+      sql`DATE(${appointmentsTable.date} AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo')`,
+    );
 
   return (
     <PageContainer>
@@ -210,6 +221,20 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
           <TopDoctors doctors={topDoctorsData} />
         </div>
         <div className="grid grid-cols-[2.25fr_1fr] gap-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar />
+                <CardTitle>Agendamentos por dia</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={appointmentsTableColumns}
+                data={todayAppointments}
+              />
+            </CardContent>
+          </Card>
           <TopSpecialties topSpecialties={topSpecialtiesData} />
         </div>
       </PageContent>
