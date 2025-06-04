@@ -1,6 +1,11 @@
-import { CheckCircle2 } from "lucide-react";
+"use client";
+
+import { loadStripe } from "@stripe/stripe-js";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
 import type React from "react";
 
+import { createStripeCheckout } from "@/actions/create-stripe-checkout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,10 +21,34 @@ interface SubscriptionPlanProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function SubscriptionPlan({
-  active = true,
+  active = false,
   className,
   ...props
 }: SubscriptionPlanProps) {
+  const createStripeCheckoutAction = useAction(createStripeCheckout, {
+    onSuccess: async ({ data }) => {
+      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        throw new Error("Stripe publishable key not found");
+      }
+
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      );
+
+      if (!stripe) {
+        throw new Error("Stripe not found");
+      }
+
+      if (!data?.sessionId) {
+        throw new Error("Session ID not found");
+      }
+
+      await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
+    },
+  });
+
   const features = [
     "Cadastro de até 3 médicos",
     "Agendamentos ilimitados",
@@ -28,6 +57,10 @@ export function SubscriptionPlan({
     "Confirmação manual",
     "Suporte via e-mail",
   ];
+
+  const handleSubscribeClick = () => {
+    createStripeCheckoutAction.execute();
+  };
 
   return (
     <Card className={cn("mx-auto w-full max-w-sm", className)} {...props}>
@@ -50,7 +83,7 @@ export function SubscriptionPlan({
 
       <CardContent className="pb-6">
         <div className="mb-4 flex items-baseline">
-          <span className="text-3xl font-bold text-gray-900">R$59</span>
+          <span className="text-3xl font-bold text-gray-900">R$60</span>
           <span className="ml-1 text-gray-500">/mês</span>
         </div>
 
@@ -74,8 +107,16 @@ export function SubscriptionPlan({
               ? "bg-gray-900 text-white hover:bg-gray-800"
               : "bg-gray-900 text-white hover:bg-gray-800",
           )}
+          onClick={active ? () => {} : handleSubscribeClick}
+          disabled={createStripeCheckoutAction.isExecuting}
         >
-          {active ? "Gerenciar Assinatura" : "Fazer Upgrade"}
+          {createStripeCheckoutAction.isExecuting ? (
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+          ) : active ? (
+            "Gerenciar Assinatura"
+          ) : (
+            "Fazer assinatura"
+          )}
         </Button>
       </CardFooter>
     </Card>
