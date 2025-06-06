@@ -7,19 +7,16 @@ import { usersTable } from "@/db/schema";
 
 export const POST = async (request: Request) => {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    throw new Error("Stripe secret key is not set");
+    throw new Error("Stripe secret key not found");
   }
-
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
-    throw new Error("Stripe signature is not set");
+    throw new Error("Stripe signature not found");
   }
-
   const text = await request.text();
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2025-05-28.basil",
   });
-
   const event = stripe.webhooks.constructEvent(
     text,
     signature,
@@ -31,24 +28,25 @@ export const POST = async (request: Request) => {
       if (!event.data.object.id) {
         throw new Error("Subscription ID not found");
       }
-
-      const { subscription, subscription_details, customer } = event.data
-        .object as unknown as {
+      const { customer } = event.data.object as unknown as {
         customer: string;
-        subscription: string;
+      };
+      const { subscription_details } = event.data.object.parent as unknown as {
         subscription_details: {
+          subscription: string;
           metadata: {
             userId: string;
           };
         };
       };
-
+      const subscription = subscription_details.subscription;
       if (!subscription) {
-        throw new Error();
+        throw new Error("Subscription not found");
       }
-
       const userId = subscription_details.metadata.userId;
-
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
       await db
         .update(usersTable)
         .set({
@@ -66,17 +64,13 @@ export const POST = async (request: Request) => {
       const subscription = await stripe.subscriptions.retrieve(
         event.data.object.id,
       );
-
       if (!subscription) {
         throw new Error("Subscription not found");
       }
-
       const userId = subscription.metadata.userId;
-
       if (!userId) {
         throw new Error("User ID not found");
       }
-
       await db
         .update(usersTable)
         .set({
@@ -87,5 +81,7 @@ export const POST = async (request: Request) => {
         .where(eq(usersTable.id, userId));
     }
   }
-  return NextResponse.json({ received: true });
+  return NextResponse.json({
+    received: true,
+  });
 };
