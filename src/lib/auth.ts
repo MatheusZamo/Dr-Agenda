@@ -25,6 +25,7 @@ export const auth = betterAuth({
         where: eq(usersToClinicsTable.userId, user.id),
         with: {
           clinic: true,
+          user: true,
         },
       });
       //TODO: Ao adaptar para o usuario ter mais de uma clinica, mudar o codigo abaixo
@@ -32,6 +33,7 @@ export const auth = betterAuth({
       return {
         user: {
           ...user,
+          plan: clinic?.user?.plan,
           clinic: clinic?.clinicId
             ? {
                 id: clinic?.clinicId,
@@ -46,7 +48,25 @@ export const auth = betterAuth({
 
   user: {
     modelName: "usersTable",
+    additionalFields: {
+      stripeCustomerId: {
+        type: "string",
+        fieldName: "stripeCustomerId",
+        required: false,
+      },
+      stripeSubscriptionId: {
+        type: "string",
+        fieldName: "stripeSubscriptionId",
+        required: false,
+      },
+      plan: {
+        type: "string",
+        fieldName: "plan",
+        required: false,
+      },
+    },
   },
+
   session: {
     modelName: "sessionsTable",
   },
