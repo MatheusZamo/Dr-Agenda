@@ -118,7 +118,7 @@ export function SubscriptionPlan({
               ? "bg-gray-900 text-white hover:bg-gray-800"
               : "bg-gray-900 text-white hover:bg-gray-800",
           )}
-          onClick={active ? () => {} : handleSubscribeClick}
+          onClick={active ? handleManagePlanClick : handleSubscribeClick}
           disabled={createStripeCheckoutAction.isExecuting}
         >
           {createStripeCheckoutAction.isExecuting ? (
