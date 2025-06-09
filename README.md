@@ -11,14 +11,18 @@ Uma plataforma completa e intuitiva para resolver a complexidade no agendamento 
 ### Dashboard Principal
 ![Image](https://github.com/user-attachments/assets/d7882e9f-6580-4729-99c9-e25bebb7002d)
 
-### Gerenciamento de Pacientes
-*[Inserir imagem da tela de pacientes aqui]*
+### Gerenciamento de Medicos
+![Image](https://github.com/user-attachments/assets/d4f22ae9-a77b-490c-bfbb-e1fe197344be)
 
 ### Sistema de Agendamentos
-*[Inserir imagem do calendário de agendamentos aqui]*
+![Image](https://github.com/user-attachments/assets/d139ee2c-114a-45ca-81b8-79892ca3c543)
 
-### Interface Mobile
-*[Inserir imagem da versão mobile aqui]*
+### Integraçao com Stripe
+![Image](https://github.com/user-attachments/assets/8551ed11-7df8-4b9e-bb75-e323082a54c0)
+
+
+
+
 
 ---
 
