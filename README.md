@@ -9,7 +9,7 @@ Uma plataforma completa e intuitiva para resolver a complexidade no agendamento 
 ## 📸 Screenshots
 
 ### Dashboard Principal
-*[Inserir imagem do dashboard aqui]*
+![Image](https://github.com/user-attachments/assets/d7882e9f-6580-4729-99c9-e25bebb7002d)
 
 ### Gerenciamento de Pacientes
 *[Inserir imagem da tela de pacientes aqui]*
